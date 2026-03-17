@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRAG METEO — Swiss Climbing Weather</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;700&display=swap');
+
+:root {
+–bg-primary: #0a0e14;
+–bg-panel: #0d1117;
+–bg-card: #131920;
+–bg-card-hover: #1a2230;
+–border: #1e2a3a;
+–border-active: #2d4a6f;
+–text-primary: #c8d6e5;
+–text-secondary: #6b7d93;
+–text-dim: #3d4f63;
+–accent-green: #00e676;
+–accent-green-dim: #00e67622;
+–accent-amber: #ffab00;
+–accent-amber-dim: #ffab0022;
+–accent-red: #ff5252;
+–accent-red-dim: #ff525222;
+–accent-cyan: #00bcd4;
+–accent-cyan-dim: #00bcd422;
+–accent-blue: #448aff;
+–score-great: #00e676;
+–score-good: #69f0ae;
+–score-ok: #ffab00;
+–score-poor: #ff6e40;
+–score-bad: #ff5252;
+–scanline: rgba(0, 230, 118, 0.03);
+}
+
+- { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+background: var(–bg-primary);
+color: var(–text-primary);
+font-family: ‘Rajdhani’, sans-serif;
+min-height: 100vh;
+overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::after {
+content: ‘’;
+position: fixed;
+inset: 0;
+background: repeating-linear-gradient(
+0deg,
+transparent,
+transparent 2px,
+var(–scanline) 2px,
+var(–scanline) 4px
+);
+pointer-events: none;
+z-index: 9999;
+}
+
+/* ─── HEADER ─── */
+.header {
+background: var(–bg-panel);
+border-bottom: 1px solid var(–border);
+padding: 16px 24px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+position: sticky;
+top: 0;
+z-index: 100;
+}
+
+.header-left {
+display: flex;
+align-items: center;
+gap: 16px;
+}
+
+.logo {
+font-family: ‘Orbitron’, sans-serif;
+font-size: 20px;
+font-weight: 700;
+letter-spacing: 3px;
+color: var(–accent-green);
+text-shadow: 0 0 20px var(–accent-green-dim);
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.logo-icon {
+width: 32px;
+height: 32px;
+border: 2px solid var(–accent-green);
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 14px;
+animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+0%, 100% { box-shadow: 0 0 8px var(–accent-green-dim); }
+50% { box-shadow: 0 0 20px var(–accent-green-dim); }
+}
+
+.header-subtitle {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 11px;
+color: var(–text-secondary);
+letter-spacing: 2px;
+text-transform: uppercase;
+}
+
+.header-right {
+display: flex;
+align-items: center;
+gap: 20px;
+}
+
+.status-indicator {
+display: flex;
+align-items: center;
+gap: 8px;
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 11px;
+color: var(–text-secondary);
+}
+
+.status-dot {
+width: 8px;
+height: 8px;
+border-radius: 50%;
+background: var(–accent-green);
+animation: blink 2s ease-in-out infinite;
+}
+
+.status-dot.loading {
+background: var(–accent-amber);
+animation: blink 0.5s ease-in-out infinite;
+}
+
+.status-dot.error {
+background: var(–accent-red);
+animation: none;
+}
+
+@keyframes blink {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.3; }
+}
+
+.refresh-btn {
+background: transparent;
+border: 1px solid var(–border);
+color: var(–text-secondary);
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 11px;
+padding: 6px 14px;
+cursor: pointer;
+letter-spacing: 1px;
+transition: all 0.2s;
+}
+
+.refresh-btn:hover {
+border-color: var(–accent-cyan);
+color: var(–accent-cyan);
+box-shadow: 0 0 12px var(–accent-cyan-dim);
+}
+
+/* ─── MAIN LAYOUT ─── */
+.main {
+max-width: 1400px;
+margin: 0 auto;
+padding: 24px;
+}
+
+/* ─── TOOLBAR ─── */
+.toolbar {
+display: flex;
+align-items: center;
+gap: 12px;
+margin-bottom: 24px;
+flex-wrap: wrap;
+}
+
+.add-crag-btn {
+background: var(–bg-card);
+border: 1px dashed var(–border);
+color: var(–accent-cyan);
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 12px;
+padding: 8px 16px;
+cursor: pointer;
+letter-spacing: 1px;
+transition: all 0.2s;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.add-crag-btn:hover {
+border-color: var(–accent-cyan);
+box-shadow: 0 0 12px var(–accent-cyan-dim);
+}
+
+.filter-pills {
+display: flex;
+gap: 6px;
+margin-left: auto;
+}
+
+.pill {
+background: var(–bg-card);
+border: 1px solid var(–border);
+color: var(–text-secondary);
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 10px;
+padding: 5px 12px;
+cursor: pointer;
+letter-spacing: 1px;
+transition: all 0.2s;
+}
+
+.pill.active {
+border-color: var(–accent-green);
+color: var(–accent-green);
+box-shadow: 0 0 8px var(–accent-green-dim);
+}
+
+.pill:hover { border-color: var(–text-secondary); }
+
+/* ─── CRAG GRID ─── */
+.crag-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+gap: 20px;
+}
+
+/* ─── CRAG CARD ─── */
+.crag-card {
+background: var(–bg-card);
+border: 1px solid var(–border);
+padding: 0;
+position: relative;
+overflow: hidden;
+transition: all 0.3s;
+animation: card-in 0.4s ease-out both;
+}
+
+.crag-card:hover {
+border-color: var(–border-active);
+box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+}
+
+@keyframes card-in {
+from { opacity: 0; transform: translateY(12px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.card-header {
+padding: 16px 20px 12px;
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+border-bottom: 1px solid var(–border);
+}
+
+.card-header-left {
+flex: 1;
+}
+
+.crag-name {
+font-family: ‘Orbitron’, sans-serif;
+font-size: 15px;
+font-weight: 600;
+letter-spacing: 2px;
+color: var(–text-primary);
+margin-bottom: 4px;
+}
+
+.crag-meta {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 10px;
+color: var(–text-secondary);
+letter-spacing: 1px;
+display: flex;
+gap: 14px;
+flex-wrap: wrap;
+}
+
+.crag-meta span { white-space: nowrap; }
+
+.card-actions {
+display: flex;
+gap: 6px;
+align-items: center;
+}
+
+.icon-btn {
+background: none;
+border: 1px solid transparent;
+color: var(–text-dim);
+cursor: pointer;
+font-size: 14px;
+padding: 4px 6px;
+transition: all 0.2s;
+font-family: ‘Share Tech Mono’, monospace;
+}
+
+.icon-btn:hover {
+color: var(–accent-red);
+border-color: var(–accent-red-dim);
+}
+
+/* ─── FORECAST STRIP ─── */
+.forecast-strip {
+padding: 0;
+display: flex;
+overflow-x: auto;
+scrollbar-width: thin;
+scrollbar-color: var(–border) transparent;
+}
+
+.forecast-strip::-webkit-scrollbar { height: 4px; }
+.forecast-strip::-webkit-scrollbar-track { background: transparent; }
+.forecast-strip::-webkit-scrollbar-thumb { background: var(–border); }
+
+.day-col {
+flex: 0 0 auto;
+min-width: 100px;
+padding: 12px 14px;
+border-right: 1px solid var(–border);
+text-align: center;
+cursor: default;
+transition: background 0.15s;
+position: relative;
+}
+
+.day-col:last-child { border-right: none; }
+.day-col:hover { background: var(–bg-card-hover); }
+
+.day-col.today {
+background: var(–accent-green-dim);
+border-bottom: 2px solid var(–accent-green);
+}
+
+.day-label {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 10px;
+color: var(–text-secondary);
+letter-spacing: 1px;
+text-transform: uppercase;
+margin-bottom: 8px;
+}
+
+.day-label .date-num {
+display: block;
+font-size: 18px;
+font-family: ‘Rajdhani’, sans-serif;
+font-weight: 700;
+color: var(–text-primary);
+line-height: 1;
+margin-top: 2px;
+}
+
+.score-ring {
+width: 52px;
+height: 52px;
+margin: 8px auto;
+position: relative;
+}
+
+.score-ring svg {
+width: 52px;
+height: 52px;
+transform: rotate(-90deg);
+}
+
+.score-ring .ring-bg {
+fill: none;
+stroke: var(–border);
+stroke-width: 3;
+}
+
+.score-ring .ring-fg {
+fill: none;
+stroke-width: 3;
+stroke-linecap: round;
+transition: stroke-dashoffset 0.8s ease-out, stroke 0.3s;
+}
+
+.score-val {
+position: absolute;
+inset: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+font-family: ‘Orbitron’, sans-serif;
+font-size: 14px;
+font-weight: 700;
+}
+
+.day-details {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 10px;
+color: var(–text-secondary);
+line-height: 1.7;
+text-align: left;
+padding: 0 2px;
+margin-top: 8px;
+}
+
+.day-details .detail-row {
+display: flex;
+justify-content: space-between;
+gap: 4px;
+}
+
+.detail-label { color: var(–text-dim); }
+
+.detail-val { color: var(–text-primary); }
+
+.detail-val.rain { color: var(–accent-cyan); }
+.detail-val.wind-warn { color: var(–accent-amber); }
+.detail-val.wind-bad { color: var(–accent-red); }
+
+.weather-icon {
+font-size: 22px;
+margin: 4px 0 2px;
+filter: drop-shadow(0 0 4px rgba(255,255,255,0.1));
+}
+
+/* ─── MODAL ─── */
+.modal-overlay {
+display: none;
+position: fixed;
+inset: 0;
+background: rgba(0,0,0,0.7);
+z-index: 500;
+align-items: center;
+justify-content: center;
+backdrop-filter: blur(4px);
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+background: var(–bg-panel);
+border: 1px solid var(–border);
+padding: 28px 32px;
+width: 90%;
+max-width: 480px;
+position: relative;
+animation: modal-in 0.25s ease-out;
+}
+
+@keyframes modal-in {
+from { opacity: 0; transform: scale(0.95) translateY(10px); }
+to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal h2 {
+font-family: ‘Orbitron’, sans-serif;
+font-size: 14px;
+letter-spacing: 3px;
+color: var(–accent-cyan);
+margin-bottom: 20px;
+}
+
+.modal label {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 11px;
+color: var(–text-secondary);
+letter-spacing: 1px;
+display: block;
+margin-bottom: 6px;
+margin-top: 14px;
+}
+
+.modal label:first-of-type { margin-top: 0; }
+
+.modal input, .modal select {
+width: 100%;
+background: var(–bg-card);
+border: 1px solid var(–border);
+color: var(–text-primary);
+font-family: ‘Rajdhani’, sans-serif;
+font-size: 15px;
+padding: 8px 12px;
+outline: none;
+transition: border-color 0.2s;
+}
+
+.modal input:focus, .modal select:focus {
+border-color: var(–accent-cyan);
+}
+
+.modal input::placeholder {
+color: var(–text-dim);
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 11px;
+}
+
+.modal-btns {
+display: flex;
+gap: 12px;
+margin-top: 24px;
+}
+
+.modal-btns button {
+flex: 1;
+padding: 10px;
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 12px;
+letter-spacing: 1px;
+cursor: pointer;
+border: 1px solid var(–border);
+transition: all 0.2s;
+}
+
+.btn-save {
+background: var(–accent-green-dim);
+color: var(–accent-green);
+border-color: var(–accent-green) !important;
+}
+
+.btn-save:hover {
+background: var(–accent-green);
+color: var(–bg-primary);
+}
+
+.btn-cancel {
+background: transparent;
+color: var(–text-secondary);
+}
+
+.btn-cancel:hover {
+border-color: var(–text-secondary);
+}
+
+.modal-close {
+position: absolute;
+top: 12px;
+right: 16px;
+background: none;
+border: none;
+color: var(–text-dim);
+font-size: 18px;
+cursor: pointer;
+transition: color 0.2s;
+}
+
+.modal-close:hover { color: var(–accent-red); }
+
+/* ─── ORIENTATION TAGS ─── */
+.orientation-tags {
+display: flex;
+gap: 4px;
+flex-wrap: wrap;
+margin-top: 4px;
+}
+
+.o-tag {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 9px;
+padding: 2px 6px;
+border: 1px solid var(–border);
+color: var(–text-dim);
+letter-spacing: 1px;
+}
+
+.o-tag.sun {
+border-color: var(–accent-amber);
+color: var(–accent-amber);
+}
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+grid-column: 1 / -1;
+text-align: center;
+padding: 80px 20px;
+}
+
+.empty-state .empty-icon {
+font-size: 48px;
+margin-bottom: 16px;
+opacity: 0.3;
+}
+
+.empty-state p {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 13px;
+color: var(–text-dim);
+letter-spacing: 1px;
+}
+
+/* ─── LEGEND ─── */
+.legend {
+margin-top: 32px;
+padding: 16px 20px;
+background: var(–bg-card);
+border: 1px solid var(–border);
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 10px;
+color: var(–text-secondary);
+letter-spacing: 1px;
+display: flex;
+gap: 24px;
+flex-wrap: wrap;
+align-items: center;
+}
+
+.legend-title {
+color: var(–text-dim);
+text-transform: uppercase;
+margin-right: 8px;
+}
+
+.legend-item {
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+.legend-swatch {
+width: 12px;
+height: 12px;
+border-radius: 2px;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+.crag-grid { grid-template-columns: 1fr; }
+.header { flex-direction: column; gap: 10px; align-items: flex-start; }
+.header-right { width: 100%; justify-content: space-between; }
+}
+
+@media (max-width: 500px) {
+.main { padding: 12px; }
+.day-col { min-width: 85px; padding: 10px 8px; }
+.toolbar { flex-direction: column; align-items: stretch; }
+.filter-pills { margin-left: 0; }
+}
+
+/* ─── LOADING SHIMMER ─── */
+.shimmer {
+background: linear-gradient(90deg, var(–bg-card) 25%, var(–bg-card-hover) 50%, var(–bg-card) 75%);
+background-size: 200% 100%;
+animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+0% { background-position: 200% 0; }
+100% { background-position: -200% 0; }
+}
+
+.forecast-loading {
+display: flex;
+gap: 0;
+padding: 0;
+}
+
+.forecast-loading .day-placeholder {
+flex: 0 0 100px;
+height: 180px;
+border-right: 1px solid var(–border);
+}
+
+/* ─── TOOLTIP ─── */
+.tip {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 10px;
+color: var(–text-dim);
+margin-top: 4px;
+letter-spacing: 0.5px;
+}
+</style>
+
+</head>
+<body>
+
+<!-- HEADER -->
+
+<div class="header">
+<div class="header-left">
+<div class="logo">
+<div class="logo-icon">⛰</div>
+CRAG METEO
+</div>
+<div class="header-subtitle">Climbing Weather Intelligence</div>
+</div>
+<div class="header-right">
+<div class="status-indicator">
+<div class="status-dot" id="statusDot"></div>
+<span id="statusText">INITIALIZING</span>
+</div>
+<button class="refresh-btn" onclick="refreshAll()">↻ REFRESH</button>
+</div>
+</div>
+
+<!-- MAIN -->
+
+<div class="main">
+<div class="toolbar">
+<button class="add-crag-btn" onclick="openModal()">+ ADD CRAG</button>
+<div class="filter-pills">
+<button class="pill active" data-sort="name" onclick="setSort(this)">A–Z</button>
+<button class="pill" data-sort="score" onclick="setSort(this)">BEST SCORE</button>
+<button class="pill" data-sort="region" onclick="setSort(this)">REGION</button>
+</div>
+</div>
+
+<div class="crag-grid" id="cragGrid"></div>
+
+<div class="legend">
+<span class="legend-title">Climb Score</span>
+<div class="legend-item"><div class="legend-swatch" style="background:var(--score-great)"></div> 80–100 Send it</div>
+<div class="legend-item"><div class="legend-swatch" style="background:var(--score-good)"></div> 60–79 Good</div>
+<div class="legend-item"><div class="legend-swatch" style="background:var(--score-ok)"></div> 40–59 Maybe</div>
+<div class="legend-item"><div class="legend-swatch" style="background:var(--score-poor)"></div> 20–39 Meh</div>
+<div class="legend-item"><div class="legend-swatch" style="background:var(--score-bad)"></div> 0–19 Rest day</div>
+</div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+<div class="modal">
+<button class="modal-close" onclick="closeModal()">✕</button>
+<h2 id="modalTitle">ADD NEW CRAG</h2>
+
+```
+<label>CRAG NAME</label>
+<input type="text" id="inputName" placeholder="e.g. Sobrio">
+
+<label>REGION / CANTON</label>
+<input type="text" id="inputRegion" placeholder="e.g. Ticino">
+
+<label>LATITUDE</label>
+<input type="number" step="any" id="inputLat" placeholder="46.4800">
+
+<label>LONGITUDE</label>
+<input type="number" step="any" id="inputLon" placeholder="8.9200">
+
+<label>ALTITUDE (m)</label>
+<input type="number" id="inputAlt" placeholder="950">
+
+<label>WALL ORIENTATION</label>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;" id="orientationBtns"></div>
+<p class="tip">Select faces that get sun — helps compute ideal climbing hours.</p>
+
+<label>ROCK TYPE</label>
+<input type="text" id="inputRock" placeholder="e.g. Gneiss, Granite, Limestone">
+
+<div class="modal-btns">
+<button class="btn-cancel" onclick="closeModal()">CANCEL</button>
+<button class="btn-save" onclick="saveCrag()">SAVE</button>
+</div>
+```
+
+</div>
+</div>
+
+<script>
+// ─── DATA STORE ───
+const STORAGE_KEY = 'cragMeteo_crags_v2'; // v2: force reset for updated crag data
+const ORIENTATIONS = ['N','NE','E','SE','S','SW','W','NW'];
+
+const DEFAULT_CRAGS = [
+{
+id: 'sobrio',
+name: 'Sobrio',
+region: 'Ticino',
+lat: 46.480,
+lon: 8.920,
+alt: 950,
+orientation: ['S','SE','SW'],
+rock: 'Gneiss',
+},
+{
+id: 'sunneplaettli',
+name: 'Sunneplättli',
+region: 'Schwyz (Gersau)',
+lat: 46.994,
+lon: 8.524,
+alt: 650,
+orientation: ['S','SW'],
+rock: 'Limestone',
+}
+];
+
+let crags = [];
+let forecastCache = {};
+let currentSort = 'name';
+let editingId = null;
+
+// ─── PERSISTENCE ───
+function loadCrags() {
+try {
+const stored = localStorage.getItem(STORAGE_KEY);
+if (stored) {
+crags = JSON.parse(stored);
+} else {
+crags = [...DEFAULT_CRAGS];
+saveCragsToStorage();
+}
+} catch (e) {
+crags = [...DEFAULT_CRAGS];
+}
+}
+
+function saveCragsToStorage() {
+localStorage.setItem(STORAGE_KEY, JSON.stringify(crags));
+}
+
+// ─── WEATHER API ───
+async function fetchForecast(crag) {
+const params = new URLSearchParams({
+latitude: crag.lat,
+longitude: crag.lon,
+daily: [
+'temperature_2m_max','temperature_2m_min',
+'precipitation_sum','precipitation_probability_max',
+'wind_speed_10m_max','wind_gusts_10m_max',
+'weather_code',
+'sunshine_duration',
+'uv_index_max'
+].join(','),
+timezone: 'Europe/Zurich',
+forecast_days: 7,
+});
+
+const url = `https://api.open-meteo.com/v1/forecast?${params}`;
+
+try {
+const resp = await fetch(url);
+if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+return resp.json();
+} catch (e) {
+// Detect sandbox / iframe restriction
+const isSandboxed = (window.self !== window.top) || (window.location.protocol === 'blob:');
+if (isSandboxed || e.message?.includes('Failed to fetch') || e.name === 'TypeError') {
+throw new Error('Sandbox blocked — download & open in browser');
+}
+throw e;
+}
+}
+
+// ─── SCORE ENGINE ───
+function computeScore(day) {
+let score = 100;
+
+// Rain penalty (heaviest factor)
+const precip = day.precipitation_sum || 0;
+const precipProb = day.precipitation_probability_max || 0;
+if (precip > 5) score -= 60;
+else if (precip > 2) score -= 40;
+else if (precip > 0.5) score -= 20;
+else if (precip > 0) score -= 8;
+score -= (precipProb / 100) * 15;
+
+// Wind penalty
+const wind = day.wind_speed_10m_max || 0;
+const gusts = day.wind_gusts_10m_max || 0;
+if (gusts > 60) score -= 35;
+else if (gusts > 40) score -= 20;
+else if (wind > 30) score -= 15;
+else if (wind > 20) score -= 5;
+
+// Temperature comfort — ideal 12–25°C for max
+const tMax = day.temperature_2m_max;
+if (tMax !== undefined) {
+if (tMax < 2) score -= 30;
+else if (tMax < 6) score -= 18;
+else if (tMax < 10) score -= 8;
+else if (tMax > 35) score -= 25;
+else if (tMax > 30) score -= 12;
+}
+
+// Weather code penalties
+const wc = day.weather_code || 0;
+if (wc >= 95) score -= 30; // thunderstorm
+else if (wc >= 71) score -= 25; // snow
+else if (wc >= 61) score -= 20; // rain
+else if (wc >= 51) score -= 10; // drizzle
+else if (wc >= 45) score -= 8; // fog
+
+return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+function scoreColor(s) {
+if (s >= 80) return 'var(--score-great)';
+if (s >= 60) return 'var(--score-good)';
+if (s >= 40) return 'var(--score-ok)';
+if (s >= 20) return 'var(--score-poor)';
+return 'var(--score-bad)';
+}
+
+function scoreLabel(s) {
+if (s >= 80) return 'SEND IT';
+if (s >= 60) return 'GOOD';
+if (s >= 40) return 'MAYBE';
+if (s >= 20) return 'MEH';
+return 'REST';
+}
+
+// ─── WEATHER ICONS ───
+function weatherIcon(code) {
+if (code === undefined || code === null) return '—';
+if (code <= 1) return '☀️';
+if (code <= 3) return '⛅';
+if (code <= 48) return '🌫️';
+if (code <= 57) return '🌦️';
+if (code <= 67) return '🌧️';
+if (code <= 77) return '🌨️';
+if (code <= 82) return '🌧️';
+if (code <= 86) return '🌨️';
+if (code >= 95) return '⛈️';
+return '🌥️';
+}
+
+// ─── RENDER ───
+function renderCards() {
+const grid = document.getElementById('cragGrid');
+let sorted = [...crags];
+
+if (currentSort === 'score') {
+sorted.sort((a, b) => {
+const sa = getBestScore(a.id);
+const sb = getBestScore(b.id);
+return sb - sa;
+});
+} else if (currentSort === 'region') {
+sorted.sort((a, b) => (a.region || '').localeCompare(b.region || ''));
+} else {
+sorted.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+if (sorted.length === 0) {
+grid.innerHTML = `
+<div class="empty-state">
+<div class="empty-icon">⛰</div>
+<p>NO CRAGS CONFIGURED<br>Add your first crag to begin.</p>
+</div>
+`;
+return;
+}
+
+grid.innerHTML = sorted.map((c, i) => {
+const fc = forecastCache[c.id];
+const orientTags = (c.orientation || []).map(o => {
+const sunFaces = ['S','SE','SW','E','W'];
+const isSun = sunFaces.includes(o);
+return `<span class="o-tag ${isSun ? 'sun' : ''}">${o}</span>`;
+}).join('');
+
+let forecastHTML;
+if (!fc) {
+forecastHTML = `<div class="forecast-loading">${'<div class="day-placeholder shimmer"></div>'.repeat(7)}</div>`;
+} else if (fc.error) {
+forecastHTML = `<div style="padding:20px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent-red);">⚠ ${fc.error}</div>`;
+} else {
+const today = new Date().toISOString().slice(0, 10);
+forecastHTML = `<div class="forecast-strip">${fc.daily.time.map((t, di) => {
+const d = new Date(t + 'T00:00:00');
+const dayName = d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+const dateNum = d.getDate();
+const isToday = t === today;
+
+const dayData = {
+temperature_2m_max: fc.daily.temperature_2m_max[di],
+temperature_2m_min: fc.daily.temperature_2m_min[di],
+precipitation_sum: fc.daily.precipitation_sum[di],
+precipitation_probability_max: fc.daily.precipitation_probability_max[di],
+wind_speed_10m_max: fc.daily.wind_speed_10m_max[di],
+wind_gusts_10m_max: fc.daily.wind_gusts_10m_max[di],
+weather_code: fc.daily.weather_code[di],
+sunshine_duration: fc.daily.sunshine_duration?.[di],
+uv_index_max: fc.daily.uv_index_max?.[di],
+};
+
+const score = computeScore(dayData);
+const color = scoreColor(score);
+const circumference = 2 * Math.PI * 22;
+const offset = circumference - (score / 100) * circumference;
+
+const precip = dayData.precipitation_sum || 0;
+const precipProb = dayData.precipitation_probability_max || 0;
+const wind = dayData.wind_speed_10m_max || 0;
+const gusts = dayData.wind_gusts_10m_max || 0;
+const tMax = dayData.temperature_2m_max;
+const tMin = dayData.temperature_2m_min;
+const sunHrs = dayData.sunshine_duration ? (dayData.sunshine_duration / 3600).toFixed(1) : '—';
+
+let windClass = '';
+if (gusts > 50) windClass = 'wind-bad';
+else if (gusts > 35 || wind > 25) windClass = 'wind-warn';
+
+let rainClass = precip > 0.5 ? 'rain' : '';
+
+return `
+<div class="day-col ${isToday ? 'today' : ''}">
+<div class="day-label">${dayName}<span class="date-num">${dateNum}</span></div>
+<div class="weather-icon">${weatherIcon(dayData.weather_code)}</div>
+<div class="score-ring">
+<svg viewBox="0 0 48 48">
+<circle class="ring-bg" cx="24" cy="24" r="22"/>
+<circle class="ring-fg" cx="24" cy="24" r="22"
+stroke="${color}"
+stroke-dasharray="${circumference}"
+stroke-dashoffset="${offset}"
+/>
+</svg>
+<div class="score-val" style="color:${color}">${score}</div>
+</div>
+<div class="day-details">
+<div class="detail-row"><span class="detail-label">TEMP</span><span class="detail-val">${tMin !== undefined ? Math.round(tMin) : '?'}/${tMax !== undefined ? Math.round(tMax) : '?'}°</span></div>
+<div class="detail-row"><span class="detail-label">RAIN</span><span class="detail-val ${rainClass}">${precip.toFixed(1)}mm ${precipProb}%</span></div>
+<div class="detail-row"><span class="detail-label">WIND</span><span class="detail-val ${windClass}">${Math.round(wind)}km/h</span></div>
+<div class="detail-row"><span class="detail-label">GUST</span><span class="detail-val ${windClass}">${Math.round(gusts)}km/h</span></div>
+<div class="detail-row"><span class="detail-label">SUN</span><span class="detail-val">${sunHrs}h</span></div>
+</div>
+</div>
+`;
+}).join('')}</div>`;
+}
+
+return `
+<div class="crag-card" style="animation-delay:${i * 0.08}s">
+<div class="card-header">
+<div class="card-header-left">
+<div class="crag-name">${c.name.toUpperCase()}</div>
+<div class="crag-meta">
+<span>${c.region || '—'}</span>
+<span>${c.alt || '?'}m</span>
+<span>${c.rock || '—'}</span>
+<span>${c.lat.toFixed(3)}°N ${c.lon.toFixed(3)}°E</span>
+</div>
+<div class="orientation-tags">${orientTags}</div>
+</div>
+<div class="card-actions">
+<button class="icon-btn" title="Edit" onclick="editCrag('${c.id}')">✎</button>
+<button class="icon-btn" title="Remove" onclick="removeCrag('${c.id}')">✕</button>
+</div>
+</div>
+${forecastHTML}
+</div>
+`;
+}).join('');
+}
+
+function getBestScore(id) {
+const fc = forecastCache[id];
+if (!fc || fc.error || !fc.daily) return -1;
+let best = 0;
+fc.daily.time.forEach((_, di) => {
+const dayData = {
+precipitation_sum: fc.daily.precipitation_sum[di],
+precipitation_probability_max: fc.daily.precipitation_probability_max[di],
+wind_speed_10m_max: fc.daily.wind_speed_10m_max[di],
+wind_gusts_10m_max: fc.daily.wind_gusts_10m_max[di],
+temperature_2m_max: fc.daily.temperature_2m_max[di],
+weather_code: fc.daily.weather_code[di],
+};
+const s = computeScore(dayData);
+if (s > best) best = s;
+});
+return best;
+}
+
+// ─── FETCH ALL ───
+async function fetchAllForecasts() {
+setStatus('loading', 'FETCHING DATA…');
+let hasError = false;
+
+const promises = crags.map(async (c) => {
+try {
+const data = await fetchForecast(c);
+forecastCache[c.id] = data;
+} catch (e) {
+forecastCache[c.id] = { error: e.message || 'Fetch failed' };
+hasError = true;
+}
+renderCards();
+});
+
+await Promise.all(promises);
+
+if (hasError) {
+setStatus('error', 'PARTIAL ERROR');
+} else {
+const now = new Date();
+const ts = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+setStatus('ok', `UPDATED ${ts}`);
+}
+}
+
+function refreshAll() {
+forecastCache = {};
+renderCards();
+fetchAllForecasts();
+}
+
+// ─── STATUS ───
+function setStatus(state, text) {
+const dot = document.getElementById('statusDot');
+const txt = document.getElementById('statusText');
+dot.className = 'status-dot';
+if (state === 'loading') dot.classList.add('loading');
+if (state === 'error') dot.classList.add('error');
+txt.textContent = text;
+}
+
+// ─── SORT ───
+function setSort(btn) {
+document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+btn.classList.add('active');
+currentSort = btn.dataset.sort;
+renderCards();
+}
+
+// ─── MODAL ───
+let selectedOrientations = [];
+
+function buildOrientationButtons() {
+const container = document.getElementById('orientationBtns');
+container.innerHTML = ORIENTATIONS.map(o => {
+const active = selectedOrientations.includes(o);
+return `<button type="button" class="pill ${active ? 'active' : ''}"
+onclick="toggleOrientation('${o}', this)"
+style="font-size:11px;padding:4px 10px;">${o}</button>`;
+}).join('');
+}
+
+function toggleOrientation(o, btn) {
+const idx = selectedOrientations.indexOf(o);
+if (idx >= 0) {
+selectedOrientations.splice(idx, 1);
+btn.classList.remove('active');
+} else {
+selectedOrientations.push(o);
+btn.classList.add('active');
+}
+}
+
+function openModal(id) {
+editingId = id || null;
+selectedOrientations = [];
+
+if (editingId) {
+const c = crags.find(x => x.id === editingId);
+if (!c) return;
+document.getElementById('modalTitle').textContent = 'EDIT CRAG';
+document.getElementById('inputName').value = c.name;
+document.getElementById('inputRegion').value = c.region || '';
+document.getElementById('inputLat').value = c.lat;
+document.getElementById('inputLon').value = c.lon;
+document.getElementById('inputAlt').value = c.alt || '';
+document.getElementById('inputRock').value = c.rock || '';
+selectedOrientations = [...(c.orientation || [])];
+} else {
+document.getElementById('modalTitle').textContent = 'ADD NEW CRAG';
+document.getElementById('inputName').value = '';
+document.getElementById('inputRegion').value = '';
+document.getElementById('inputLat').value = '';
+document.getElementById('inputLon').value = '';
+document.getElementById('inputAlt').value = '';
+document.getElementById('inputRock').value = '';
+}
+
+buildOrientationButtons();
+document.getElementById('modalOverlay').classList.add('open');
+document.getElementById('inputName').focus();
+}
+
+function closeModal() {
+document.getElementById('modalOverlay').classList.remove('open');
+editingId = null;
+}
+
+function closeModalOutside(e) {
+if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+async function saveCrag() {
+const name = document.getElementById('inputName').value.trim();
+const region = document.getElementById('inputRegion').value.trim();
+const lat = parseFloat(document.getElementById('inputLat').value);
+const lon = parseFloat(document.getElementById('inputLon').value);
+const alt = parseInt(document.getElementById('inputAlt').value) || null;
+const rock = document.getElementById('inputRock').value.trim();
+
+if (!name || isNaN(lat) || isNaN(lon)) {
+alert('Name, Latitude, and Longitude are required.');
+return;
+}
+
+if (editingId) {
+const idx = crags.findIndex(c => c.id === editingId);
+if (idx >= 0) {
+crags[idx] = { ...crags[idx], name, region, lat, lon, alt, rock, orientation: [...selectedOrientations] };
+delete forecastCache[editingId];
+}
+} else {
+const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now();
+crags.push({ id, name, region, lat, lon, alt, rock, orientation: [...selectedOrientations] });
+}
+
+saveCragsToStorage();
+closeModal();
+renderCards();
+fetchAllForecasts();
+}
+
+function editCrag(id) {
+openModal(id);
+}
+
+function removeCrag(id) {
+const c = crags.find(x => x.id === id);
+if (!c) return;
+if (!confirm(`Remove ${c.name}?`)) return;
+crags = crags.filter(x => x.id !== id);
+delete forecastCache[id];
+saveCragsToStorage();
+renderCards();
+}
+
+// ─── AUTO-REFRESH ───
+let refreshInterval;
+function startAutoRefresh() {
+// Refresh every 30 minutes
+refreshInterval = setInterval(() => {
+fetchAllForecasts();
+}, 30 * 60 * 1000);
+}
+
+// ─── INIT ───
+function init() {
+loadCrags();
+renderCards();
+
+// Detect sandboxed environment and show guidance
+const isSandboxed = (window.self !== window.top) || (window.location.protocol === 'blob:');
+if (isSandboxed) {
+const banner = document.createElement('div');
+banner.style.cssText = `
+background: var(--accent-amber-dim);
+border: 1px solid var(--accent-amber);
+padding: 12px 20px;
+margin-bottom: 20px;
+font-family: 'Share Tech Mono', monospace;
+font-size: 12px;
+color: var(--accent-amber);
+letter-spacing: 0.5px;
+line-height: 1.6;
+`;
+banner.innerHTML = '⚠ SANDBOX DETECTED — API calls are blocked in the preview. Download this file and open it in your browser (Safari, Chrome, Firefox) for live weather data.';
+document.querySelector('.main').prepend(banner);
+setStatus('error', 'SANDBOX MODE');
+return; // Don't attempt API calls
+}
+
+fetchAllForecasts();
+startAutoRefresh();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// Keyboard: Escape closes modal
+document.addEventListener('keydown', (e) => {
+if (e.key === 'Escape') closeModal();
+});
+</script>
+
+</body>
+</html>
