@@ -323,8 +323,13 @@ function renderCards() {
       }
     }
     return `<div class="crag-card" style="animation-delay:${ci * 0.08}s">
-      <div class="card-head"><div class="card-head-row"><div class="crag-name">${c.name}</div><div class="card-actions"><button class="card-act" onclick="editCrag('${c.id}')">✎</button><button class="card-act" onclick="removeCrag('${c.id}')">✕</button></div></div>
-      <div class="meta-pipe">${metaHTML}</div></div>
+      <div class="card-head">
+        <div class="card-head-row">
+          <div class="crag-name">${c.name}</div>
+          <div class="meta-pipe">${metaHTML}</div>
+          <div class="card-actions"><button class="card-act" onclick="editCrag('${c.id}')">✎</button><button class="card-act" onclick="removeCrag('${c.id}')">✕</button></div>
+        </div>
+      </div>
       ${c.notes ? `<div class="card-notes">${c.notes}</div>` : ''}
       ${fHTML}</div>`;
   }).join('');
