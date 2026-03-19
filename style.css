@@ -300,21 +300,21 @@ body {
 /* ─── FORECAST GRID ─── */
 .forecast-area {
   position: relative;
+  overflow: hidden;
 }
 .forecast-grid {
   display: flex;
-  flex-wrap: nowrap;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  margin: 0 -4px;
+  margin: 0;
   padding-bottom: 2px;
 }
 .forecast-grid::-webkit-scrollbar { display: none; }
 .fday {
-  flex: 0 0 33.33%;
-  min-width: 0;
+  flex: 0 0 calc(100% / 3);
+  box-sizing: border-box;
   scroll-snap-align: start;
   text-align: center;
   padding: 8px 4px 6px;
