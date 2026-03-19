@@ -460,7 +460,7 @@ function renderCards() {
           ${modelHTML}
         </div>`;
       }
-      fHTML = `<div class="forecast-area"><div class="forecast-grid">${cells}</div>${detailHTML}</div>`;
+      fHTML = `<div class="forecast-area"><div class="forecast-scroll"><div class="forecast-track">${cells}</div></div>${detailHTML}</div>`;
     }
 
     return `<div class="crag-card" style="animation-delay:${ci * 0.06}s">
@@ -588,7 +588,7 @@ function renderExplore() {
                 : `<button class="add-to-usuals-btn" onclick="addExploreToUsuals('${region}','${rc.name.replace(/'/g,"\\'")}')">+ Add to Usuals</button>`;
 
               detailHTML = `<div class="explore-crag-detail open">
-                <div class="forecast-area"><div class="forecast-grid">${cells}</div></div>
+                <div class="forecast-area"><div class="forecast-scroll"><div class="forecast-track">${cells}</div></div></div>
                 ${addBtn}
               </div>`;
             }
