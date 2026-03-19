@@ -812,3 +812,58 @@ body {
   margin-left: 8px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── HEADER BYLINE ─── */
+.header-byline {
+  font-family: var(--font-data);
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+.header-byline a {
+  color: var(--ink-faint);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.header-byline a:hover {
+  color: var(--coral);
+  border-bottom-color: var(--coral);
+}
+
+/* ─── FOOTER ─── */
+.site-footer {
+  text-align: center;
+  padding: 40px 0 24px;
+  margin-top: 20px;
+  border-top: 1px solid var(--card-border);
+  font-family: var(--font-data);
+  font-size: 11px;
+  color: var(--ink-faint);
+  line-height: 1.8;
+}
+.footer-line {
+  margin-bottom: 4px;
+}
+.footer-line a {
+  color: var(--ink-faint);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.footer-line a:hover {
+  color: var(--coral);
+  border-bottom-color: var(--coral);
+}
+.footer-ig {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.footer-ig svg {
+  vertical-align: middle;
+}
+.footer-copy {
+  margin-top: 8px;
+  font-size: 10px;
+  opacity: 0.6;
+}
