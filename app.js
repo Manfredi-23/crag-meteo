@@ -387,7 +387,9 @@ function renderCards() {
     } else if (fc.error || !src?.daily) {
       fHTML = '<div class="card-loading">no data available</div>';
     } else {
+      const todayStr = new Date().toISOString().slice(0, 10);
       const cells = src.daily.time.map((ds, di) => {
+        if (ds < todayStr) return ''; // past days: used for scoring, not displayed
         const dd = extractDay(src, di);
         const bl = blendedScore(fc, di, c.orientation);
         const dayName = new Date(ds + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' });
@@ -560,15 +562,18 @@ function renderExplore() {
           const src = fc.best || fc.ecmwf;
           if (src?.daily) {
             // Mini forecast row
+            const exploreToday = new Date().toISOString().slice(0, 10);
             const scores = src.daily.time.map((ds, di) => {
+              if (ds < exploreToday) return '';
               const bl = blendedScore(fc, di, rc.orientation || []);
               const dayName = new Date(ds + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' });
               return `<span style="color:${scoreColorHex(bl.score)};font-weight:700">${dayName} ${bl.score}</span>`;
-            }).slice(0, 4).join(' · ');
+            }).filter(Boolean).slice(0, 4).join(' · ');
             scoreHTML = `<div style="font-family:var(--font-data);font-size:10px;margin-top:4px">${scores}</div>`;
 
             if (cragOpen) {
               const cells = src.daily.time.map((ds, di) => {
+                if (ds < exploreToday) return '';
                 const dd = extractDay(src, di);
                 const bl = blendedScore(fc, di, rc.orientation || []);
                 const dayName = new Date(ds + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' });
