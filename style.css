@@ -302,18 +302,19 @@ body {
   position: relative;
 }
 .forecast-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 33.33%);
+  display: flex;
+  flex-wrap: nowrap;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  gap: 0;
   margin: 0 -4px;
   padding-bottom: 2px;
 }
 .forecast-grid::-webkit-scrollbar { display: none; }
 .fday {
+  flex: 0 0 33.33%;
+  min-width: 0;
   scroll-snap-align: start;
   text-align: center;
   padding: 8px 4px 6px;
