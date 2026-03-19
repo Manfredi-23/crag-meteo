@@ -370,6 +370,84 @@ function getDayTrend(slots) {
   return 'Stable';
 }
 
+// ─── ROCK TEMPERATURE ESTIMATE ───
+// Physics-informed model: air temp + solar gain - wind cooling
+// Estimated during peak climbing hours (10:00–15:00)
+function estimateRockTemp(fc, dayIndex, orientation, alt, rock) {
+  const src = fc.best || fc.ecmwf;
+  if (!src?.hourly?.time || !src?.daily?.time) return null;
+  const dayStr = src.daily.time[dayIndex];
+  const times = src.hourly.time;
+  const temps = src.hourly.temperature_2m;
+  const dd = extractDay(src, dayIndex);
+
+  // 1. Base: average air temp during climbing hours (10–15)
+  const startH = dayStr + 'T10:00';
+  const endH = dayStr + 'T15:00';
+  let airSum = 0, airCount = 0;
+  for (let i = 0; i < times.length; i++) {
+    if (times[i] >= startH && times[i] < endH && temps?.[i] != null) {
+      airSum += temps[i]; airCount++;
+    }
+  }
+  if (airCount === 0) {
+    // Fallback to daily max
+    if (dd.temperature_2m_max == null) return null;
+    airSum = dd.temperature_2m_max; airCount = 1;
+  }
+  const airTemp = airSum / airCount;
+
+  // 2. Sunshine fraction (0–1): how much of the day is sunny
+  const maxSunSeconds = 14 * 3600; // ~14h possible in summer, conservative
+  const sunFraction = dd.sunshine_duration ? Math.min(dd.sunshine_duration / maxSunSeconds, 1) : 0;
+
+  // 3. Solar gain: depends on orientation, sunshine, rock type
+  // South-facing in full sun: up to +15°C gain on dark rock
+  // North-facing: minimal gain even in sun
+  let orientFactor = 0.3; // default: moderate exposure
+  if (orientation?.length) {
+    const southish = orientation.some(d => ['S', 'SE', 'SW'].includes(d));
+    const westish = orientation.some(d => ['W', 'SW', 'NW'].includes(d));
+    const eastish = orientation.some(d => ['E', 'SE', 'NE'].includes(d));
+    const northOnly = orientation.every(d => ['N', 'NE', 'NW'].includes(d));
+    if (northOnly) orientFactor = 0.08;
+    else if (southish) orientFactor = 0.85;
+    else if (westish || eastish) orientFactor = 0.5;
+  }
+
+  // Rock absorption: dark rock absorbs more
+  let rockFactor = 1.0;
+  const rockLower = (rock || '').toLowerCase();
+  if (rockLower.includes('granite') || rockLower.includes('gneiss')) rockFactor = 1.15; // darker
+  else if (rockLower.includes('limestone')) rockFactor = 0.85; // lighter
+  else if (rockLower.includes('sandstone')) rockFactor = 1.0;
+
+  // Altitude UV boost: +2% per 1000m above sea level
+  const altBoost = 1 + ((alt || 0) / 1000) * 0.02;
+
+  // Max solar gain: ~15°C in perfect conditions (full sun, south, dark rock)
+  const solarGain = 15 * sunFraction * orientFactor * rockFactor * altBoost;
+
+  // 4. Wind cooling: wind cools the rock surface
+  const wind = dd.wind_speed_10m_max || 0;
+  let windCooling = 0;
+  if (wind > 5) windCooling = Math.min((wind - 5) * 0.15, 5); // up to 5°C cooling
+
+  // 5. Final estimate
+  const rockTemp = airTemp + solarGain - windCooling;
+  return Math.round(rockTemp);
+}
+
+// Friction label based on rock temp
+function frictionLabel(rockTemp) {
+  if (rockTemp == null) return { text: '—', cls: '' };
+  if (rockTemp < 5) return { text: 'Cold rock', cls: 'rain' };
+  if (rockTemp < 12) return { text: 'Cool · good friction', cls: '' };
+  if (rockTemp < 25) return { text: 'Ideal friction', cls: '' };
+  if (rockTemp < 35) return { text: 'Warm · friction ok', cls: 'warn' };
+  return { text: 'Hot · sweaty', cls: 'bad' };
+}
+
 // ─── SORT ───
 function setSort(btn) {
   currentSort = btn.dataset.sort;
@@ -450,6 +528,10 @@ function renderCards() {
         const trend = getDayTrend(slots);
         const trendClass = trend === 'Improving' ? 'improving' : trend === 'Getting worse' ? 'worsening' : '';
 
+        // Rock temperature estimate
+        const rockTemp = estimateRockTemp(fc, expIdx, c.orientation, c.alt, c.rock);
+        const friction = frictionLabel(rockTemp);
+
         let slotsHTML = '';
         if (slots) {
           slotsHTML = `<div class="detail-times">` +
@@ -483,6 +565,7 @@ function renderCards() {
             <div class="detail-stat"><div class="detail-stat-label">Sunshine</div><div class="detail-stat-val">${sh} h</div></div>
             <div class="detail-stat"><div class="detail-stat-label">Rain</div><div class="detail-stat-val ${rc}">${p.toFixed(1)}mm (${pp}%)</div></div>
             <div class="detail-stat"><div class="detail-stat-label">Drying Time</div><div class="detail-stat-val ${dryingClass(bl.dryHours)}">${dryingLabel(bl.dryHours)}</div></div>
+            <div class="detail-stat"><div class="detail-stat-label">Rock ~</div><div class="detail-stat-val ${friction.cls}">${rockTemp != null ? '~' + rockTemp + '°' : '—'}</div></div>
           </div>
           <div class="detail-trend ${trendClass}">${trend}</div>
           ${modelHTML}
