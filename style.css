@@ -303,7 +303,7 @@ body {
 }
 .forecast-grid {
   display: grid;
-  grid-template-columns: repeat(7, 25%);
+  grid-template-columns: repeat(7, 33.33%);
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
