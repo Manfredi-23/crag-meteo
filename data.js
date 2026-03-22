@@ -6,62 +6,62 @@
 const DEFAULT_CRAGS = [
   {
     id:'sobrio', name:'Sobrio', region:'Ticino', lat:46.480, lon:8.920, alt:950,
-    rock:'Gneiss', orientation:['S','SE','SW'],
+    rock:'Gneiss', orientation:['S','SE','SW'], terrain:'vertical',
     notes:'Steep gneiss in the trees above Faido. Holds are good until they aren\'t. South-facing keeps it warm in shoulder season, but summer turns it into a convection oven. The approach is short enough that you\'ll wonder why you\'re already out of breath.'
   },
   {
     id:'sunnenplattli', name:'Sunneplättli', region:'Schwyz / Gersau', lat:46.994, lon:8.524, alt:650,
-    rock:'Limestone', orientation:['S','SW'],
+    rock:'Limestone', orientation:['S','SW'], terrain:'slab',
     notes:'Lakeside limestone with views that almost justify the grades. South-facing and low altitude — perfect for winter cragging, unbearable from June. The rock is polished where everyone grabs, pristine where nobody dares. Parking is an optimistic word for what happens on weekends.'
   },
   {
     id:'handegg', name:'Handegg', region:'Berner Oberland / Grimsel', lat:46.717, lon:8.305, alt:1400,
-    rock:'Granite', orientation:['S','SW'],
+    rock:'Granite', orientation:['S','SW'], terrain:'slab',
     notes:'Grimsel granite at altitude. Crystal-studded slabs that demand precision and punish laziness. The season is short and the weather changes its mind hourly. When conditions align, there\'s nothing quite like it. When they don\'t, there\'s always the hotel bar.'
   },
   {
     id:'schollenen', name:'Schöllenen', region:'Uri / Göschenen', lat:46.665, lon:8.588, alt:1000,
-    rock:'Granite', orientation:['S','SE'],
+    rock:'Granite', orientation:['S','SE'], terrain:'vertical',
     notes:'Gorge granite with a dramatic setting and an equally dramatic walk-in. The routes are steep, the rock is good, and the spray from the Reuss keeps things interesting. Historically significant — the Devil built a bridge here, presumably after failing the crux.'
   },
   {
     id:'lehn', name:'Lehn', region:'Berner Oberland / Interlaken', lat:46.688, lon:7.848, alt:800,
-    rock:'Limestone', orientation:['S','SW'],
+    rock:'Limestone', orientation:['S','SW'], terrain:'slab',
     notes:'Roadside limestone near Interlaken that\'s better than it has any right to be. Compact tufas and crimps on a south-facing wall that dries fast after rain. Popular enough that you\'ll share it with half of Bern on good days. The other half is at Gastlosen.'
   },
   {
     id:'salvan', name:'Salvan', region:'Wallis / Bas-Valais', lat:46.120, lon:7.020, alt:900,
-    rock:'Gneiss', orientation:['S','SE','SW'],
+    rock:'Gneiss', orientation:['S','SE','SW'], terrain:'vertical',
     notes:'Valais gneiss in a quiet corner that the crowds haven\'t found yet — or have and just don\'t talk about it. Multiple aspects mean you can chase sun or shade depending on your ambition. The crag rewards technique over power, which is either good news or terrible news for you.'
   },
   {
     id:'cadarese', name:'Cadarese', region:'Ossola Valley (IT border)', lat:46.280, lon:8.300, alt:700,
-    rock:'Granite', orientation:['S','SW'],
+    rock:'Granite', orientation:['S','SW'], terrain:'slab',
     notes:'Compact granite with very little tolerance for hesitation. Technical, friction-dependent, and occasionally humbling. North-facing, which keeps it usable when the valley heats up, but also means it takes its time to dry. Conditions matter more here than you\'d like to admit.'
   },
   {
     id:'felliberg', name:'Felliberg', region:'Uri / Amsteg', lat:46.736, lon:8.641, alt:1200,
-    rock:'Granite', orientation:['S','SE'],
+    rock:'Granite', orientation:['S','SE'], terrain:'vertical',
     notes:'Granite slabs and faces above Amsteg with a peaceful approach through forest. The climbing is subtle — small edges, delicate footwork, and the kind of moves that look easy until you\'re on them. Early season can be damp; late season can be dark by 4pm. Plan accordingly.'
   },
   {
     id:'drihorlini', name:'Dri Horlini', region:'Wallis / Saastal', lat:46.105, lon:7.945, alt:2100,
-    rock:'Gneiss', orientation:['S','SW'],
+    rock:'Gneiss', orientation:['S','SW'], terrain:'slab',
     notes:'High-altitude gneiss in the Saas valley — the kind of place where you earn your sends with a 45-minute hike and thin air. The rock is immaculate, the views are absurd, and the season is approximately six weeks long. Bring sunscreen and low expectations for onsighting.'
   },
   {
     id:'gotthard', name:'Gotthard Tremola', region:'Ticino / Airolo', lat:46.555, lon:8.565, alt:1800,
-    rock:'Granite', orientation:['S','SE'],
+    rock:'Granite', orientation:['S','SE'], terrain:'vertical',
     notes:'Pass-side granite along the old Tremola road. The cobblestones below are a UNESCO site; the climbing above is less documented but equally demanding. Short season, real weather, and the kind of alpine ambiance that makes you feel like a proper mountaineer. Even on a sport route.'
   },
   {
     id:'vals', name:'Vals', region:'Graubünden', lat:46.617, lon:9.180, alt:1250,
-    rock:'Gneiss', orientation:['S','SW'],
+    rock:'Gneiss', orientation:['S','SW'], terrain:'slab',
     notes:'Gneiss in Zumthor country — clean lines, honest holds, no nonsense. The village has thermal baths for when your skin gives out. South-facing and reasonably sheltered, so it collects sun like a savings account. If you can handle the drive, it\'s worth every hairpin.'
   },
   {
     id:'chironico', name:'Chironico Sport', region:'Ticino / V. Levantina', lat:46.445, lon:8.855, alt:750,
-    rock:'Gneiss', orientation:['S','SE'],
+    rock:'Gneiss', orientation:['S','SE'], terrain:'vertical',
     notes:'Not bouldering. Sport routes, 6a–7c, on compact gneiss that tends to stay reliable even after weather. The exposure is predominantly south-facing, with natural shelter from wind and lingering moisture. It comes into its own in the colder months. October through April is the window.'
   },
 ];

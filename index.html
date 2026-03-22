@@ -28,6 +28,7 @@
   <nav class="nav">
     <button class="nav-btn active" onclick="switchTab('crags',this)"><span class="nav-icon" data-icon="usuals"></span> Usuals</button>
     <button class="nav-btn" onclick="switchTab('explore',this)"><span class="nav-icon" data-icon="explore"></span> Explore</button>
+    <button class="nav-btn" onclick="switchTab('planner',this)"><span class="nav-icon" data-icon="planner"></span> Planner</button>
     <button class="nav-btn" onclick="openModal()"><span class="nav-icon" data-icon="addOne"></span> Add One</button>
   </nav>
   <main>
@@ -36,7 +37,6 @@
         <button class="sort-pill active" data-sort="weekend" onclick="setSort(this)">This Weekend</button>
         <button class="sort-pill" data-sort="score" onclick="setSort(this)">Best Today</button>
         <button class="sort-pill" data-sort="name" onclick="setSort(this)">Name</button>
-        <button class="sort-pill" data-sort="region" onclick="setSort(this)">Region</button>
       </div>
       <div id="cragGrid"></div>
     </div>
@@ -47,6 +47,69 @@
         <button class="sort-pill" data-sort="name" onclick="setExploreSort(this)">Name</button>
       </div>
       <div id="exploreGrid"></div>
+    </div>
+    <div class="tab-pane" id="pane-planner">
+      <div class="planner-filters">
+        <div class="planner-card">
+          <div class="planner-row">
+            <div class="field planner-field"><label>Your location</label><input type="text" id="plannerLocation" placeholder="e.g. Zürich, or 47.37, 8.55"></div>
+          </div>
+          <div class="planner-row">
+            <div class="field planner-field"><label>Days</label>
+              <div class="planner-days" id="plannerDays"></div>
+            </div>
+          </div>
+          <div class="planner-row planner-row--multi">
+            <div class="field planner-field"><label>Rock type</label>
+              <div class="orient-grid" id="plannerRock">
+                <button type="button" class="orient-btn sel" onclick="this.classList.toggle('sel')" data-val="Granite">Granite</button>
+                <button type="button" class="orient-btn sel" onclick="this.classList.toggle('sel')" data-val="Gneiss">Gneiss</button>
+                <button type="button" class="orient-btn sel" onclick="this.classList.toggle('sel')" data-val="Limestone">Limestone</button>
+              </div>
+            </div>
+            <div class="field planner-field"><label>Terrain</label>
+              <div class="orient-grid" id="plannerTerrain">
+                <button type="button" class="orient-btn sel" onclick="this.classList.toggle('sel')" data-val="slab">Slab</button>
+                <button type="button" class="orient-btn sel" onclick="this.classList.toggle('sel')" data-val="vertical">Vertical</button>
+                <button type="button" class="orient-btn sel" onclick="this.classList.toggle('sel')" data-val="overhang">Overhang</button>
+              </div>
+            </div>
+          </div>
+          <div class="planner-row planner-row--multi">
+            <div class="field planner-field"><label>Facing</label>
+              <div class="orient-grid" id="plannerFacing">
+                <button type="button" class="orient-btn sel" onclick="this.classList.toggle('sel')" data-val="S">S</button>
+                <button type="button" class="orient-btn sel" onclick="this.classList.toggle('sel')" data-val="SW">SW</button>
+                <button type="button" class="orient-btn sel" onclick="this.classList.toggle('sel')" data-val="SE">SE</button>
+                <button type="button" class="orient-btn" onclick="this.classList.toggle('sel')" data-val="W">W</button>
+                <button type="button" class="orient-btn" onclick="this.classList.toggle('sel')" data-val="E">E</button>
+                <button type="button" class="orient-btn" onclick="this.classList.toggle('sel')" data-val="NW">NW</button>
+                <button type="button" class="orient-btn" onclick="this.classList.toggle('sel')" data-val="NE">NE</button>
+                <button type="button" class="orient-btn" onclick="this.classList.toggle('sel')" data-val="N">N</button>
+              </div>
+            </div>
+          </div>
+          <div class="planner-row planner-row--multi">
+            <div class="field planner-field"><label>Min score</label>
+              <input type="range" id="plannerMinScore" min="0" max="80" value="40" oninput="document.getElementById('plannerMinScoreVal').textContent=this.value">
+              <span class="planner-range-val" id="plannerMinScoreVal">40</span>
+            </div>
+            <div class="field planner-field"><label>Results</label>
+              <input type="range" id="plannerMaxResults" min="3" max="10" value="5" oninput="document.getElementById('plannerMaxResultsVal').textContent=this.value">
+              <span class="planner-range-val" id="plannerMaxResultsVal">5</span>
+            </div>
+            <div class="field planner-field"><label>Search in</label>
+              <select id="plannerSource" class="explore-sel">
+                <option value="both">Both</option>
+                <option value="usuals">Usuals only</option>
+                <option value="explore">Explore only</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary planner-go" onclick="runPlanner()">Find crags</button>
+        </div>
+      </div>
+      <div id="plannerResults"></div>
     </div>
   </main>
   <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
@@ -64,6 +127,7 @@
         <div class="field"><label>Rock type</label><input type="text" id="inputRock" placeholder="Gneiss"></div>
       </div>
       <div class="field"><label>Wall orientation</label><div class="orient-grid" id="orientationBtns"></div><p class="field-hint">Which directions catch sun</p></div>
+      <div class="field"><label>Terrain</label><div class="orient-grid" id="terrainBtns"></div><p class="field-hint">Slab, vertical, or overhang — affects rain scoring</p></div>
       <div class="field"><label>Notes</label><textarea id="inputNotes" placeholder="Approach info, parking, best sectors…"></textarea></div>
       <div class="modal-btns">
         <button class="btn-secondary" onclick="closeModal()">Cancel</button>
