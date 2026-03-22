@@ -132,8 +132,8 @@ body {
 /* ─── NAV ─── */
 .nav {
   display: flex;
-  justify-content: center;
-  gap: 28px;
+  justify-content: flex-start;
+  gap: 20px;
   padding: 14px 0;
   margin: 4px 0 12px;
   position: sticky;
@@ -144,7 +144,11 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--card-border);
   transition: background 0.3s;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.nav::-webkit-scrollbar { display: none; }
 .nav-btn {
   background: none; border: none; cursor: pointer;
   font-family: var(--font-body); font-weight: 600; font-size: 16px;
@@ -153,6 +157,8 @@ body {
   padding: 4px 0;
   position: relative;
   transition: color 0.3s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .nav-btn::after {
   content: '';
@@ -768,16 +774,20 @@ body {
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .orient-grid {
   display: flex; flex-wrap: wrap; gap: 6px;
+  align-items: flex-start;
 }
 .orient-btn {
-  font-family: var(--font-data); font-size: 11px; font-weight: 700;
-  width: 38px; height: 32px;
+  font-family: var(--font-data); font-size: 10px; font-weight: 700;
+  min-width: 38px;
+  padding: 7px 10px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--card-border);
   background: var(--bg);
   color: var(--ink-faint);
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
+  text-transform: capitalize;
 }
 .orient-btn.sel {
   background: var(--coral);
@@ -917,8 +927,8 @@ body {
   flex-wrap: wrap;
 }
 .planner-row--multi > .planner-field {
-  flex: 1;
-  min-width: 100px;
+  flex: 1 1 120px;
+  min-width: 0;
 }
 .planner-field label {
   font-family: var(--font-data);
@@ -958,14 +968,14 @@ body {
 }
 .planner-days {
   display: flex;
-  gap: 4px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 .planner-day-btn {
   font-family: var(--font-data);
   font-size: 10px;
   font-weight: 700;
-  padding: 6px 10px;
+  padding: 6px 8px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--card-border);
   background: var(--bg);
@@ -973,6 +983,7 @@ body {
   cursor: pointer;
   transition: all 0.2s;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .planner-day-btn.sel {
   background: var(--coral);

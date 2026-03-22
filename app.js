@@ -1121,26 +1121,26 @@ async function runPlanner() {
     const distLabel = r.dist != null ? r.dist + ' km' : '';
     const metaParts = [c.region, c.alt + 'm', c.rock, (c.orientation || []).join('·'), c.terrain].filter(Boolean);
 
-    // Mini forecast for selected days
-    const src = (r.fc.best || r.fc.ecmwf);
+    // Mini forecast for selected days — check both models for day availability
     let daysHTML = '';
-    if (src?.daily?.time) {
-      daysHTML = selectedDays.map(ds => {
-        const di = src.daily.time.indexOf(ds);
-        if (di < 0) return '';
-        const dd = extractDay(src, di);
-        const bl = blendedScore(r.fc, di, c);
-        const dn = new Date(ds + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' });
-        const num = new Date(ds + 'T00:00:00').getDate();
-        return `<div class="fday">
-          <div class="fday-name">${dn} ${num}</div>
-          <div class="fday-icon">${wxSVG(dd.weather_code)}</div>
-          <div class="fday-wx-label">${wxLabel(dd.weather_code)}</div>
-          <div class="fday-temp">[ ${dd.temperature_2m_min != null ? Math.round(dd.temperature_2m_min) : '?'}° / ${dd.temperature_2m_max != null ? Math.round(dd.temperature_2m_max) : '?'}° ]</div>
-          <div class="score-pill ${scorePillClass(bl.score)}">${bl.score}</div>
-        </div>`;
-      }).join('');
-    }
+    daysHTML = selectedDays.map(ds => {
+      // Find day index in whichever model has it
+      let di = -1, useSrc = null;
+      if (r.fc.best?.daily?.time) { const idx = r.fc.best.daily.time.indexOf(ds); if (idx >= 0) { di = idx; useSrc = r.fc.best; } }
+      if (di < 0 && r.fc.ecmwf?.daily?.time) { const idx = r.fc.ecmwf.daily.time.indexOf(ds); if (idx >= 0) { di = idx; useSrc = r.fc.ecmwf; } }
+      if (di < 0 || !useSrc) return '';
+      const dd = extractDay(useSrc, di);
+      const bl = blendedScore(r.fc, di, c);
+      const dn = new Date(ds + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' });
+      const num = new Date(ds + 'T00:00:00').getDate();
+      return `<div class="fday">
+        <div class="fday-name">${dn} ${num}</div>
+        <div class="fday-icon">${wxSVG(dd.weather_code)}</div>
+        <div class="fday-wx-label">${wxLabel(dd.weather_code)}</div>
+        <div class="fday-temp">[ ${dd.temperature_2m_min != null ? Math.round(dd.temperature_2m_min) : '?'}° / ${dd.temperature_2m_max != null ? Math.round(dd.temperature_2m_max) : '?'}° ]</div>
+        <div class="score-pill ${scorePillClass(bl.score)}">${bl.score}</div>
+      </div>`;
+    }).join('');
 
     return `<div class="planner-result" style="animation-delay:${ri * 0.06}s" onclick="togglePlannerDetail('pr-${ri}')">
       <div class="planner-result-head">
