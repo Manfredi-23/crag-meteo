@@ -1081,10 +1081,13 @@ async function runPlanner() {
     if (!src?.daily?.time) continue;
 
     let bestScore = -1, bestDay = null, bestDayIdx = -1;
+    let totalDayScore = 0, dayCount = 0;
     for (const ds of selectedDays) {
       const di = src.daily.time.indexOf(ds);
       if (di < 0) continue;
       const bl = blendedScore(fc, di, c);
+      totalDayScore += bl.score;
+      dayCount++;
       if (bl.score > bestScore) {
         bestScore = bl.score;
         bestDay = ds;
@@ -1092,13 +1095,13 @@ async function runPlanner() {
       }
     }
     if (bestScore < minScore) continue;
+    const avgScore = dayCount > 0 ? Math.round(totalDayScore / dayCount) : bestScore;
 
     const dist = homeLoc ? Math.round(haversineKm(homeLoc.lat, homeLoc.lon, c.lat, c.lon)) : null;
 
     scored.push({
-      crag: c, fc, bestScore, bestDay, bestDayIdx, dist,
-      // Secondary sort: distance (closer is better)
-      sortKey: bestScore * 1000 - (dist || 0),
+      crag: c, fc, bestScore, bestDay, bestDayIdx, dist, avgScore,
+      sortKey: avgScore * 1000 - (dist || 0),
     });
   }
 
@@ -1146,10 +1149,10 @@ async function runPlanner() {
           <div class="planner-result-meta">${metaParts.map(m => `<span>${m}</span>`).join('')}</div>
         </div>
         <div class="planner-result-score">
-          <div class="score-pill ${scorePillClass(r.bestScore)}" style="padding:5px 14px;font-size:18px">${r.bestScore}</div>
+          <div class="score-pill ${scorePillClass(r.avgScore)}" style="padding:5px 14px;font-size:18px">${r.avgScore}</div>
         </div>
       </div>
-      <div class="planner-result-best">${scoreWord(r.bestScore)} · ${dayLabel}${distLabel ? ' · ' + distLabel + ' away' : ''}</div>
+      <div class="planner-result-best">${scoreWord(r.avgScore)}${distLabel ? ' · ' + distLabel + ' away' : ''} · Best: ${dayLabel} (${r.bestScore})</div>
       <div class="planner-result-detail" id="pr-${ri}">
         <div class="forecast-area"><div class="forecast-scroll"><div class="forecast-track">${daysHTML}</div></div></div>
       </div>
