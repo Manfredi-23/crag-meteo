@@ -9,6 +9,7 @@ import { ALL_EXPLORE_CRAGS } from '@/data/crags';
 import { blendedScore, wxLabel } from '@/lib/scoring';
 import { getScoreLabel, scorePillClass } from '@/lib/constants';
 import WeatherIcon from '@/components/WeatherIcon';
+import { fetchGeocodeApi } from '@/lib/api';
 
 // ─── Haversine distance (km) ───
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -63,8 +64,7 @@ export default function PlannerResults({ filters, searching, setSearching }: Pla
     let homeLoc: { lat: number; lon: number } | null = null;
     if (f.location.trim()) {
       try {
-        const res = await fetch(`/api/geocode?q=${encodeURIComponent(f.location.trim())}`);
-        const data = await res.json();
+        const data = await fetchGeocodeApi(f.location.trim());
         if (data.results && data.results.length > 0) {
           homeLoc = { lat: data.results[0].lat, lon: data.results[0].lon };
         }

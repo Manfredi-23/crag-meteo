@@ -16,6 +16,9 @@ const eslintConfig = defineConfig([
     "app.js",
     "data.js",
     "icons.js",
+    // Capacitor generated iOS/Android projects
+    "ios/**",
+    "android/**",
   ]),
 ]);
 

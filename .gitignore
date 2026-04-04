@@ -8,6 +8,10 @@
 # production
 /build
 
+# capacitor
+/ios
+/android
+
 # misc
 .DS_Store
 *.pem

@@ -479,7 +479,7 @@
         "Typecheck passes"
       ],
       "priority": 27,
-      "passes": false,
+      "passes": true,
       "notes": "The iOS build uses static export. Route Handlers wont work in Capacitor - iOS app should call the deployed Vercel API URL or Open-Meteo directly."
     },
     {

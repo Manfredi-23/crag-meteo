@@ -67,6 +67,11 @@ body {
   max-width: 520px;
   margin: 0 auto;
   padding: 0 16px 100px;
+  /* Safe area insets for iOS notch/home indicator */
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: max(100px, env(safe-area-inset-bottom, 0));
+  padding-left: max(16px, env(safe-area-inset-left, 0));
+  padding-right: max(16px, env(safe-area-inset-right, 0));
   transition: background 0.4s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
 }

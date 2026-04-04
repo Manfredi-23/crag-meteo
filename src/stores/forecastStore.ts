@@ -4,6 +4,7 @@
 
 import { create } from 'zustand';
 import type { Crag, Forecast } from '@/lib/types';
+import { fetchForecastApi } from '@/lib/api';
 
 /** 30-minute auto-refresh interval (ms) */
 const REFRESH_INTERVAL = 30 * 60 * 1000;
@@ -22,7 +23,7 @@ interface ForecastState {
   /** ID for the auto-refresh interval */
   _refreshInterval: ReturnType<typeof setInterval> | null;
 
-  /** Fetch forecast for a single lat/lon from internal API route */
+  /** Fetch forecast for a single lat/lon */
   fetchForecast: (lat: number, lon: number) => Promise<Forecast>;
   /** Fetch forecasts for all given crags, update forecastCache */
   fetchAllForecasts: (crags: Crag[]) => Promise<void>;
@@ -36,9 +37,7 @@ interface ForecastState {
 
 async function apiFetchForecast(lat: number, lon: number): Promise<Forecast> {
   try {
-    const res = await fetch(`/api/forecast?lat=${lat}&lon=${lon}`);
-    if (!res.ok) throw new Error(`Forecast API ${res.status}`);
-    return await res.json();
+    return (await fetchForecastApi(lat, lon)) as Forecast;
   } catch {
     return { best: null, ecmwf: null };
   }
