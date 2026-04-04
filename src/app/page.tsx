@@ -9,6 +9,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import Tabs from '@/components/Tabs';
 import UsualsTab from '@/components/UsualsTab';
 import CragModal from '@/components/CragModal';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import type { Crag } from '@/lib/types';
 
 function Logo() {
@@ -28,11 +29,13 @@ export default function Home() {
   const activeTab = useUIStore((s) => s.activeTab);
   const addCrag = useCragStore((s) => s.addCrag);
   const editCrag = useCragStore((s) => s.editCrag);
+  const removeCrag = useCragStore((s) => s.removeCrag);
   const crags = useCragStore((s) => s.crags);
   const fetchForecast = useForecastStore((s) => s.fetchForecast);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCrag, setEditingCrag] = useState<Crag | null>(null);
+  const [removingCragId, setRemovingCragId] = useState<string | null>(null);
 
   const handleAddCrag = useCallback(() => {
     setEditingCrag(null);
@@ -50,6 +53,21 @@ export default function Home() {
   const handleCloseModal = useCallback(() => {
     setModalOpen(false);
     setEditingCrag(null);
+  }, []);
+
+  const handleRemoveCrag = useCallback((id: string) => {
+    setRemovingCragId(id);
+  }, []);
+
+  const handleConfirmRemove = useCallback(() => {
+    if (removingCragId) {
+      removeCrag(removingCragId);
+    }
+    setRemovingCragId(null);
+  }, [removingCragId, removeCrag]);
+
+  const handleCancelRemove = useCallback(() => {
+    setRemovingCragId(null);
   }, []);
 
   const handleSaveCrag = useCallback((data: Omit<Crag, 'id'>) => {
@@ -109,6 +127,7 @@ export default function Home() {
             <UsualsTab
               onAddCrag={handleAddCrag}
               onEditCrag={handleEditCrag}
+              onRemoveCrag={handleRemoveCrag}
             />
           )}
         </div>
@@ -124,6 +143,15 @@ export default function Home() {
         editCrag={editingCrag}
         onClose={handleCloseModal}
         onSave={handleSaveCrag}
+      />
+      <ConfirmDialog
+        open={removingCragId !== null}
+        title="Remove crag"
+        message={`Remove ${crags.find(c => c.id === removingCragId)?.name ?? 'this crag'}?`}
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        onConfirm={handleConfirmRemove}
+        onCancel={handleCancelRemove}
       />
     </>
   );
