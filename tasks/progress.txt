@@ -410,3 +410,16 @@
   - StatusBar and SplashScreen plugins must be dynamically imported to avoid errors on web
   - `env(safe-area-inset-*)` CSS functions handle iOS notch/home indicator without JS
 ---
+
+## 2026-04-04 - US-028
+- Verified Vercel deployment configuration: next build passes with zero errors/warnings
+- Confirmed zero-config Vercel deployment works (no vercel.json needed)
+- Created .env.example documenting the optional NEXT_PUBLIC_STATIC_EXPORT env var
+- Verified no dev-only code (console.logs, debug statements) leaking into production
+- Verified typecheck and lint both pass cleanly
+- Files changed: .env.example (new)
+- **Learnings for future iterations:**
+  - Next.js 16 with App Router works zero-config on Vercel — API routes are dynamic server functions, pages are static by default
+  - The only env var in the project is NEXT_PUBLIC_STATIC_EXPORT, used exclusively for Capacitor iOS builds (not for Vercel)
+  - No vercel.json is needed; Vercel auto-detects Next.js framework
+---
