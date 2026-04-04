@@ -6,6 +6,7 @@ import { scorePillClass } from '@/lib/constants';
 import { blendedScore, wxLabel, confTag } from '@/lib/scoring';
 import WeatherIcon from '@/components/WeatherIcon';
 import { useUIStore } from '@/stores/uiStore';
+import DayDetail from '@/components/DayDetail';
 
 interface CragCardProps {
   crag: Crag;
@@ -115,6 +116,9 @@ export default function CragCard({ crag, forecast, index = 0, onEdit, onRemove }
         <div className="forecast-scroll">
           <div className="forecast-track">{days}</div>
         </div>
+        {expandedDayIdx != null && src.daily.time[expandedDayIdx] && (
+          <DayDetail forecast={forecast} dayIndex={expandedDayIdx} crag={crag} />
+        )}
       </div>
     );
   }
